@@ -4,7 +4,8 @@ import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
 
-import { useAuth } from '../../hooks/AuthContext';
+import { useAuth } from '../../hooks/auth';
+import { useToast } from '../../hooks/toast';
 import getValidationErrors from '../../utils/getValidationErrors';
 
 import logoImg from '../../assets/logo.svg';
@@ -20,15 +21,19 @@ interface SignInFormData {
 }
 
 const SignIn: React.FC = () => {
+  /** Inicializa hooks */
   const formRef = useRef<FormHandles>(null);
-
   const { signIn } = useAuth();
+  const { addToast } = useToast();
 
+  /** Define funcao a ser executada ao submeter formulario */
   const handleSubmit = useCallback(
     async (data: SignInFormData) => {
       try {
+        /** Zera erros */
         formRef.current?.setErrors({});
 
+        /** Define esquema de validacao */
         const schema = Yup.object().shape({
           email: Yup.string()
             .email('Digite um e-mail válido')
@@ -36,24 +41,36 @@ const SignIn: React.FC = () => {
           password: Yup.string().required('Senha obrigatória'),
         });
 
+        /** Valida inputs */
         await schema.validate(data, {
           abortEarly: false,
         });
 
+        /** Executa signIn */
         await signIn({
           email: data.email,
           password: data.password,
         });
+
+        /** Se houver erro */
       } catch (err) {
+        /** Se for instancia da validacao do yup */
         if (err instanceof Yup.ValidationError) {
+          /** Pega erros */
           const errors = getValidationErrors(err);
 
+          /** Define erros nos campos */
           formRef.current?.setErrors(errors);
         }
+
+        /** Exibe toast */
+        addToast();
       }
     },
-    [signIn],
+    /** Passa dependencias do useCallback */
+    [signIn, addToast],
   );
+
   return (
     <Container>
       <Content>
