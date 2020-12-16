@@ -16,6 +16,7 @@ interface SignInCredentials {
 interface AuthContextData {
   user: Record<string, unknown>;
   signIn(credentials: SignInCredentials): Promise<void>;
+  signOut(): void;
 }
 
 /** Contexto de autenticacao */
@@ -57,9 +58,19 @@ const AuthProvider: React.FC = ({ children }) => {
     setData({ token, user });
   }, []);
 
+  /** Metodo de signout */
+  const signOut = useCallback(() => {
+    /** Remove dados no localstorage */
+    localStorage.removeItem('@GoBarber:token');
+    localStorage.removeItem('@GoBarber:user');
+
+    /** Define estado local como vazio */
+    setData({} as AuthState);
+  }, []);
+
   return (
     /** AuthContext provider passando valor com objeto de dados disponiveis no contexto */
-    <AuthContext.Provider value={{ user: data.user, signIn }}>
+    <AuthContext.Provider value={{ user: data.user, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
