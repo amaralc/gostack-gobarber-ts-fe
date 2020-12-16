@@ -3,7 +3,7 @@ import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import { useAuth } from '../../hooks/auth';
 import { useToast } from '../../hooks/toast';
@@ -26,6 +26,8 @@ const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const { signIn } = useAuth();
   const { addToast } = useToast();
+
+  const history = useHistory();
 
   /** Define funcao a ser executada ao submeter formulario */
   const handleSubmit = useCallback(
@@ -53,6 +55,7 @@ const SignIn: React.FC = () => {
           password: data.password,
         });
 
+        history.push('/dashboard');
         /** Se houver erro */
       } catch (err) {
         /** Se for instancia da validacao do yup */
@@ -75,7 +78,7 @@ const SignIn: React.FC = () => {
       }
     },
     /** Passa dependencias do useCallback */
-    [signIn, addToast],
+    [signIn, addToast, history],
   );
 
   return (
