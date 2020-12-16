@@ -31,7 +31,8 @@ const SignUp: React.FC = () => {
         abortEarly: false,
       });
     } catch (error) {
-      console.log(error);
+      /** Mostra erro (foi necessario usar json stringfy para mostrar no console) */
+      console.log(JSON.parse(JSON.stringify(error)));
     }
   }, []);
 
