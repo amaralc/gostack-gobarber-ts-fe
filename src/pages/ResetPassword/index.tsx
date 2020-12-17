@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from 'react';
+import { useLocation, useHistory } from 'react-router-dom';
 import { FiLock } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
-import { useHistory } from 'react-router-dom';
 
 import { useToast } from '../../hooks/toast';
 import getValidationErrors from '../../utils/getValidationErrors';
@@ -14,16 +14,27 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 
 import { Container, Content, AnimationContainer, Background } from './styles';
+import api from '../../services/api';
 
 interface ResetPasswordFormData {
   password: string;
   password_confirmation: string;
 }
 
+/**
+ * A custom hook that builds on useLocation to parse
+ * the query string for you.
+ * Ref: https://reactrouter.com/web/example/query-parameters
+ */
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 const SignIn: React.FC = () => {
   /** Inicializa hooks */
   const formRef = useRef<FormHandles>(null);
   const { addToast } = useToast();
+  const query = useQuery();
 
   const history = useHistory();
 
@@ -48,7 +59,25 @@ const SignIn: React.FC = () => {
           abortEarly: false,
         });
 
-        history.push('/signin');
+        /** Busca password e confirmacao dos dados do formulario */
+        const { password, password_confirmation } = data;
+
+        /** Busca token dos query parameters da rota */
+        const token = query.get('token');
+
+        /** Avalia se existe token, senao retorna erro */
+        if (!token) {
+          throw new Error();
+        }
+
+        /** Envia requisicao */
+        await api.post('/password/reset', {
+          password,
+          password_confirmation,
+          token,
+        });
+
+        history.push('/');
         /** Se houver erro */
       } catch (err) {
         /** Se for instancia da validacao do yup */
@@ -71,7 +100,7 @@ const SignIn: React.FC = () => {
       }
     },
     /** Passa dependencias do useCallback */
-    [addToast, history],
+    [addToast, history, query],
   );
 
   return (
