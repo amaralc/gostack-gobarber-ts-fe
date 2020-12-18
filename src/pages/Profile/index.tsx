@@ -68,14 +68,42 @@ const Profile: React.FC = () => {
           abortEarly: false,
         });
 
-        await api.post('/users', data);
+        /** Desestrutura dados */
+        const {
+          name,
+          email,
+          old_password,
+          password,
+          password_confirmation,
+        } = data;
 
-        history.push('/');
+        /** Constroi formData avaliando se old_password esta presente e usando spread operator */
+        const formData = {
+          name,
+          email,
+          ...(old_password
+            ? {
+                old_password,
+                password,
+                password_confirmation,
+              }
+            : {}),
+        };
 
+        /** Atualiza perfil no servidor */
+        const response = await api.put('/profile/update', formData);
+
+        updateUser(response.data);
+
+        /** Envia usuario para dashboard */
+        history.push('/dashboard');
+
+        /** Exibe mensagem de sucesso */
         addToast({
           type: 'success',
-          title: 'Cadastro realizado!',
-          description: 'Você já pode fazer seu logon no GoBarber!',
+          title: 'Perfil atualizado!',
+          description:
+            'Suas informações do perfil foram atualizadas com sucesso!',
         });
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
@@ -90,12 +118,13 @@ const Profile: React.FC = () => {
 
         addToast({
           type: 'error',
-          title: 'Erro no cadastro',
-          description: 'Ocorreu um erro ao fazer cadastro, tente novamente.',
+          title: 'Erro na atualização',
+          description:
+            'Ocorreu um erro ao atualizar o seu perfil, tente novamente.',
         });
       }
     },
-    [addToast, history],
+    [addToast, history, updateUser],
   );
 
   /** Funcao para envio da imagem para a api */
@@ -112,7 +141,7 @@ const Profile: React.FC = () => {
 
         api.patch('/users/avatar', data).then(response => {
           /** Atualiza usuario */
-          updateUser(response.data.user);
+          updateUser(response.data);
 
           /** Exibe toast de avatar atualizado */
           addToast({
