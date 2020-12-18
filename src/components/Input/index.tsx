@@ -18,6 +18,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   containerStyle?: Record<string, unknown>;
   /** Icone do tipo componente, opcional e com propriedades do tipo IconBaseProps */
   icon?: React.ComponentType<IconBaseProps>;
+  type: string;
 }
 
 /** Define input e converte propriedade icon em Icon para react entender como componente */
@@ -25,6 +26,7 @@ const Input: React.FC<InputProps> = ({
   name,
   containerStyle = {},
   icon: Icon,
+  type,
   ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,7 +68,7 @@ const Input: React.FC<InputProps> = ({
         defaultValue={defaultValue}
         ref={inputRef}
         {...rest}
-        type="text"
+        type={type}
       />
       {error && (
         <Error title={error}>
