@@ -38,6 +38,9 @@ const AuthProvider: React.FC = ({ children }) => {
 
     /** Se encontrar dados no localstorage, retorna dados encontrados como estado inicial */
     if (token && user) {
+      /** Registra token no header */
+      api.defaults.headers.authorization = `Bearer ${token}`;
+
       return { token, user: JSON.parse(user) };
     }
 
@@ -59,6 +62,9 @@ const AuthProvider: React.FC = ({ children }) => {
     /** Registra dados no localstorage */
     localStorage.setItem('@GoBarber:token', token);
     localStorage.setItem('@GoBarber:user', JSON.stringify(user));
+
+    /** Registra token no header */
+    api.defaults.headers.authorization = `Bearer ${token}`;
 
     /** Define estado local 'data' como dados registrados no localstorage */
     setData({ token, user });
