@@ -19,7 +19,9 @@ import { useAuth } from '../../hooks/auth';
 interface ProfileFormData {
   name: string;
   email: string;
+  old_password: string;
   password: string;
+  password_confirmation: string;
 }
 
 const Profile: React.FC = () => {
@@ -43,8 +45,21 @@ const Profile: React.FC = () => {
           email: Yup.string()
             .email('Digite um e-mail válido')
             .required('E-mail obrigatório'),
-          /** Campo password com minimo de 6 letras */
-          password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+          old_password: Yup.string(),
+          password: Yup.string().when('old_password', {
+            is: val => !!val.length,
+            then: Yup.string()
+              .min(6, 'No mínimo 6 dígitos')
+              .required('Campo obrigatório'),
+            otherwise: Yup.string(),
+          }),
+          password_confirmation: Yup.string()
+            .when('old_password', {
+              is: val => !!val.length,
+              then: Yup.string().required('Campo obrigatório'),
+              otherwise: Yup.string(),
+            })
+            .oneOf([Yup.ref('password')], 'Confirmação incorreta'),
         });
 
         /** Valida formato */
@@ -53,14 +68,42 @@ const Profile: React.FC = () => {
           abortEarly: false,
         });
 
-        await api.post('/users', data);
+        /** Desestrutura dados */
+        const {
+          name,
+          email,
+          old_password,
+          password,
+          password_confirmation,
+        } = data;
 
-        history.push('/');
+        /** Constroi formData avaliando se old_password esta presente e usando spread operator */
+        const formData = {
+          name,
+          email,
+          ...(old_password
+            ? {
+                old_password,
+                password,
+                password_confirmation,
+              }
+            : {}),
+        };
 
+        /** Atualiza perfil no servidor */
+        const response = await api.put('/profile/update', formData);
+
+        updateUser(response.data);
+
+        /** Envia usuario para dashboard */
+        history.push('/dashboard');
+
+        /** Exibe mensagem de sucesso */
         addToast({
           type: 'success',
-          title: 'Cadastro realizado!',
-          description: 'Você já pode fazer seu logon no GoBarber!',
+          title: 'Perfil atualizado!',
+          description:
+            'Suas informações do perfil foram atualizadas com sucesso!',
         });
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
@@ -75,12 +118,13 @@ const Profile: React.FC = () => {
 
         addToast({
           type: 'error',
-          title: 'Erro no cadastro',
-          description: 'Ocorreu um erro ao fazer cadastro, tente novamente.',
+          title: 'Erro na atualização',
+          description:
+            'Ocorreu um erro ao atualizar o seu perfil, tente novamente.',
         });
       }
     },
-    [addToast, history],
+    [addToast, history, updateUser],
   );
 
   /** Funcao para envio da imagem para a api */
@@ -97,7 +141,7 @@ const Profile: React.FC = () => {
 
         api.patch('/users/avatar', data).then(response => {
           /** Atualiza usuario */
-          updateUser(response.data.user);
+          updateUser(response.data);
 
           /** Exibe toast de avatar atualizado */
           addToast({
@@ -137,9 +181,9 @@ const Profile: React.FC = () => {
           </AvatarInput>
           <h1>Meu perfil</h1>
 
-          <Input name="name" icon={FiUser} placeholder="E-mail" />
+          <Input name="name" icon={FiUser} placeholder="Name" type="text" />
 
-          <Input name="email" icon={FiMail} placeholder="E-mail" />
+          <Input name="email" icon={FiMail} placeholder="E-mail" type="text" />
 
           <Input
             containerStyle={{ marginTop: 24 }}
