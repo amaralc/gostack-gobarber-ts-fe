@@ -19,7 +19,9 @@ import { useAuth } from '../../hooks/auth';
 interface ProfileFormData {
   name: string;
   email: string;
+  old_password: string;
   password: string;
+  password_confirmation: string;
 }
 
 const Profile: React.FC = () => {
@@ -43,8 +45,21 @@ const Profile: React.FC = () => {
           email: Yup.string()
             .email('Digite um e-mail válido')
             .required('E-mail obrigatório'),
-          /** Campo password com minimo de 6 letras */
-          password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+          old_password: Yup.string(),
+          password: Yup.string().when('old_password', {
+            is: val => !!val.length,
+            then: Yup.string()
+              .min(6, 'No mínimo 6 dígitos')
+              .required('Campo obrigatório'),
+            otherwise: Yup.string(),
+          }),
+          password_confirmation: Yup.string()
+            .when('old_password', {
+              is: val => !!val.length,
+              then: Yup.string().required('Campo obrigatório'),
+              otherwise: Yup.string(),
+            })
+            .oneOf([Yup.ref('password')], 'Confirmação incorreta'),
         });
 
         /** Valida formato */
@@ -137,9 +152,9 @@ const Profile: React.FC = () => {
           </AvatarInput>
           <h1>Meu perfil</h1>
 
-          <Input name="name" icon={FiUser} placeholder="E-mail" />
+          <Input name="name" icon={FiUser} placeholder="Name" type="text" />
 
-          <Input name="email" icon={FiMail} placeholder="E-mail" />
+          <Input name="email" icon={FiMail} placeholder="E-mail" type="text" />
 
           <Input
             containerStyle={{ marginTop: 24 }}
