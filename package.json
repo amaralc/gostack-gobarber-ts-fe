@@ -37,8 +37,8 @@
       "react-app/jest"
     ]
   },
-  "jest":{
-    "collectCoverageFrom":[
+  "jest": {
+    "collectCoverageFrom": [
       "src/pages/**/*.tsx",
       "src/components/**/*.tsx",
       "src/hooks/*.tsx",
@@ -58,6 +58,7 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/react-hooks": "^3.7.0",
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.53",
@@ -77,6 +78,7 @@
     "eslint-plugin-prettier": "^3.3.0",
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "react-test-renderer": "^17.0.1"
   }
 }
