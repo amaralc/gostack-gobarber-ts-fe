@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import SignIn from '../../pages/SignIn';
 
@@ -16,9 +16,17 @@ jest.mock('react-router-dom', () => {
   };
 });
 
+jest.mock('../../hooks/auth', () => {
+  return {
+    useAuth: () => ({
+      signIn: jest.fn(),
+    }),
+  };
+});
+
 /** Define teste de signin */
 describe('SignIn Page', () => {
-  it('should be able to sign in', () => {
+  it('should be able to sign in', async () => {
     /** Rederiza componente e retorna debug */
     const { getByPlaceholderText, getByText } = render(<SignIn />);
 
@@ -30,6 +38,8 @@ describe('SignIn Page', () => {
     fireEvent.change(passwordField, { target: { value: '123456' } });
     fireEvent.click(buttonElement);
 
-    expect(mockedHistoryPush).toHaveBeenCalledWith('/dashboard');
+    await waitFor(() => {
+      expect(mockedHistoryPush).toHaveBeenCalledWith('/dashboard');
+    });
   });
 });
